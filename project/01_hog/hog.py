@@ -109,32 +109,27 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
     say:        The commentary function to call at the end of the first turn.
     feral_hogs: A boolean indicating whether the feral hogs rule should be active.
     """
-    who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
-    # BEGIN PROBLEM 5
+    # BEGIN PROBLEM 5-6
     "*** YOUR CODE HERE ***"
-    gain0,gain1,num_rolls0,num_rolls1,pregain0,pregain1=0,0,0,0,0,0
-    while True:
-        num_rolls0=strategy0(score0,score1)
-        gain0=take_turn(num_rolls0,score1,dice)
-        score0+=gain0
-        if feral_hogs and abs(num_rolls0-pregain0)==2:score0+=3
-        pregain0=gain0
-        if is_swap(score0,score1):score0,score1=score1,score0
-        if score0>=goal or score1>=goal:return score0,score1
-
-        num_rolls1=strategy1(score1,score0)
-        gain1=take_turn(num_rolls1,score0,dice)
-        score1+=gain1
-        if feral_hogs and abs(num_rolls1-pregain1)==2:score1+=3
-        pregain1=gain1
-        if is_swap(score1,score0):score1,score0=score0,score1
-        if score0>=goal or score1>=goal:return score0,score1
-    # END PROBLEM 5
-    # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
-    # BEGIN PROBLEM 6
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 6
-    return score0, score1
+    turn_seq=0
+    last_gain=[0,0]
+    def turn(ours,theirs,our_strat,their_strat):
+        nonlocal turn_seq,last_gain,say
+        roll=our_strat(ours,theirs)
+        gain=take_turn(roll,theirs,dice)
+        ours+=gain
+        if feral_hogs and abs(roll-last_gain[turn_seq])==2:ours+=3
+        last_gain[turn_seq]=gain
+        if is_swap(ours,theirs):ours,theirs=theirs,ours
+        say=(say(theirs,ours) if turn_seq else say(ours,theirs))
+        if ours>=goal or theirs>=goal:
+            if turn_seq: return theirs,ours
+            return ours,theirs
+        else:
+            turn_seq=(turn_seq+1)%2
+            return turn(theirs,ours,their_strat,our_strat)
+    return turn(score0,score1,strategy0,strategy1)
+    # END PROBLEM 5-6
 
 
 #######################
@@ -219,6 +214,13 @@ def announce_highest(who, last_score=0, running_high=0):
     assert who == 0 or who == 1, 'The who argument should indicate a player.'
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
+    def say_highest(score0, score1):
+        gain=(score1-last_score if who else score0-last_score)
+        if gain>running_high:
+            print(gain,"point(s)! That's the biggest gain yet for Player",who)
+            return announce_highest(who,score1 if who else score0,gain)
+        return announce_highest(who,score1 if who else score0,running_high)
+    return say_highest
     # END PROBLEM 7
 
 
@@ -258,6 +260,14 @@ def make_averaged(original_function, trials_count=1000):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    def averaged(*args):
+        i=trials_count
+        sum=0
+        while i>0:
+            sum+=original_function(*args)
+            i-=1
+        return sum/trials_count
+    return averaged
     # END PROBLEM 8
 
 
@@ -272,6 +282,14 @@ def max_scoring_num_rolls(dice=six_sided, trials_count=1000):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    highest_score,highest_roll,roll,score=0,0,0,0
+    while roll<10:
+        roll+=1
+        score=make_averaged(roll_dice,trials_count)(roll,dice)
+        if score>highest_score:
+            highest_roll=roll
+            highest_score=score
+    return highest_roll
     # END PROBLEM 9
 
 
@@ -321,7 +339,8 @@ def bacon_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     rolls NUM_ROLLS otherwise.
     """
     # BEGIN PROBLEM 10
-    return 6  # Replace this statement
+    if free_bacon(opponent_score)>=cutoff:return 0
+    return num_rolls
     # END PROBLEM 10
 
 
@@ -331,7 +350,9 @@ def swap_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     non-beneficial swap. Otherwise, it rolls NUM_ROLLS.
     """
     # BEGIN PROBLEM 11
-    return 6  # Replace this statement
+    if is_swap(score+free_bacon(opponent_score),opponent_score) and score+free_bacon(opponent_score)<opponent_score:return 0
+    if is_swap(score+free_bacon(opponent_score),opponent_score)==0 and free_bacon(opponent_score)>=cutoff:return 0
+    return num_rolls
     # END PROBLEM 11
 
 

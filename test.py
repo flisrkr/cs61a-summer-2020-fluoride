@@ -1,21 +1,27 @@
-def improve(update,close,guess=1):
-    print("improve()")
-    while not close(guess):
-        guess=update(guess)
-    return guess
-
-def approx_eq(x,y,tolerance=1e-15):
-    print("approx_eq()")
-    return abs(x-y)<tolerance
-
-def golden_update(guess):
-    print("golden_update()")
-    return 1/guess+1
-
-def square_close_to_successor(guess):
-    print("square_close_to_successor()")
-    return approx_eq(guess*guess,guess+1)
-
-def myprint(pr1, pr2):
-    print("myprint")
-    print(pr1(1),pr2(2))
+def say_scores(score0, score1):
+    print("Player 0 now has", score0, "and Player 1 now has", score1)
+    
+def announce_lead_changes(last_leader=None):
+    def say_announce(score0, score1):
+        nonlocal last_leader
+        if score0 > score1:
+            leader = 0
+        elif score1 > score0:
+            leader = 1
+        else:
+            leader = None
+        if leader != None and leader != last_leader:
+            print('Player', leader, 'takes the lead by', abs(score0 - score1))
+    return say_announce
+    
+def both(f, g):
+    def say(score0, score1):
+        nonlocal f, g
+        f(score0, score1)
+        g(score0, score1)
+    return say
+    
+h=both(say_scores, announce_lead_changes())
+h(10,0)
+h(10,6)
+h(6,17)
