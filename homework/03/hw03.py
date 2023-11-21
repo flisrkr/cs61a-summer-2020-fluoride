@@ -21,6 +21,7 @@ def composer(func=lambda x: x):
     """
     def func_adder(g):
         "*** YOUR CODE HERE ***"
+        return composer(lambda x:func(g(x)))
     return func, func_adder
 
 
@@ -43,6 +44,8 @@ def g(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    if n<=3: return n
+    else: return g(n-1)+g(n-2)*2+g(n-3)*3
 
 def g_iter(n):
     """Return the value of G(n), computed iteratively.
@@ -63,6 +66,16 @@ def g_iter(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    mn1,mn2,mn3=1,2,3
+    g,i=0,0
+    while i<n:
+        if i<=2:
+            g=i+1
+        else:
+            g=mn1*3+mn2*2+mn3
+            mn1,mn2,mn3=mn2,mn3,g
+        i+=1
+    return g
 
 
 def missing_digits(n):
@@ -93,6 +106,11 @@ def missing_digits(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    if n<10:
+        return 0
+    else:
+        return max(n%10-n//10%10-1,0)+missing_digits(n//10)
+        
 
 
 def count_change(total):
@@ -112,7 +130,13 @@ def count_change(total):
     True
     """
     "*** YOUR CODE HERE ***"
-
+    def count_very_change(remain, change):
+        if remain==0:
+            return 1
+        elif remain<(1<<change):
+            return 0
+        return count_very_change(remain-(1<<change),change)+count_very_change(remain,change+1)
+    return count_very_change(total, 0)
 
 def print_move(origin, destination):
     """Print instructions to move a disk."""
@@ -147,6 +171,15 @@ def move_stack(n, start, end):
     """
     assert 1 <= start <= 3 and 1 <= end <= 3 and start != end, "Bad start/end"
     "*** YOUR CODE HERE ***"
+    def except_pole(a,b):
+        return 6-a-b
+    
+    if n==1:
+        print_move(start,end)
+    else:
+        move_stack(n-1,start,except_pole(start,end))
+        move_stack(1,start,end)
+        move_stack(n-1,except_pole(start,end),end)
 
 
 from operator import sub, mul
@@ -161,5 +194,5 @@ def make_anonymous_factorial():
     >>> check(HW_SOURCE_FILE, 'make_anonymous_factorial', ['Assign', 'AugAssign', 'FunctionDef', 'Recursion'])
     True
     """
-    return 'YOUR_EXPRESSION_HERE'
+    return lambda x: (lambda be_recurred, for_x: be_recurred(be_recurred,for_x))(lambda to_be_recurred, declining_x: to_be_recurred(to_be_recurred,declining_x-1)*declining_x if declining_x>1 else 1,x)
 
