@@ -44,11 +44,13 @@ def planet(size):
     """Construct a planet of some size."""
     assert size > 0
     "*** YOUR CODE HERE ***"
+    return ['planet',size]
 
 def size(w):
     """Select the size of a planet."""
     assert is_planet(w), 'must call size on a planet'
     "*** YOUR CODE HERE ***"
+    return w[1]
 
 def is_planet(w):
     """Whether w is a planet."""
@@ -105,6 +107,10 @@ def balanced(m):
     True
     """
     "*** YOUR CODE HERE ***"
+    if is_planet(m):
+        return True
+    return balanced(end(left(m))) and balanced(end(right(m))) and total_weight(end(left(m)))*length(left(m))==\
+        total_weight(end(right(m)))*length(right(m))
 
 def totals_tree(m):
     """Return a tree representing the mobile with its total weight at the root.
@@ -136,6 +142,9 @@ def totals_tree(m):
     True
     """
     "*** YOUR CODE HERE ***"
+    if is_planet(m):
+        return tree(size(m))
+    return tree(total_weight(m),[totals_tree(end(left(m))),totals_tree(end(right(m)))])
 
 
 def replace_leaf(t, find_value, replace_value):
@@ -168,6 +177,9 @@ def replace_leaf(t, find_value, replace_value):
     True
     """
     "*** YOUR CODE HERE ***"
+    if is_leaf(t):
+        return t if label(t)!=find_value else tree(replace_value)
+    return tree(label(t),[replace_leaf(branch,find_value,replace_value) for branch in branches(t)])
 
 
 def preorder(t):
@@ -181,7 +193,12 @@ def preorder(t):
     [2, 4, 6]
     """
     "*** YOUR CODE HERE ***"
-
+    if is_leaf(t):
+        return [label(t)]
+    preordered=[label(t)]
+    for branch in branches(t):
+        preordered+=preorder(branch)
+    return preordered
 
 def has_path(t, phrase):
     """Return whether there is a path in a tree where the entries along the path
@@ -213,7 +230,9 @@ def has_path(t, phrase):
     """
     assert len(phrase) > 0, 'no path for empty phrases.'
     "*** YOUR CODE HERE ***"
-
+    if is_leaf(t) or len(phrase)==1:
+        return label(t)==phrase
+    return label(t)==phrase[0] and any([has_path(branch,phrase[1:]) for branch in branches(t)])
 
 def interval(a, b):
     """Construct an interval from a to b."""
@@ -222,10 +241,13 @@ def interval(a, b):
 def lower_bound(x):
     """Return the lower bound of interval x."""
     "*** YOUR CODE HERE ***"
+    return x[0]
 
 def upper_bound(x):
     """Return the upper bound of interval x."""
     "*** YOUR CODE HERE ***"
+    return x[1]
+
 def str_interval(x):
     """Return a string representation of interval x.
     """
@@ -237,20 +259,21 @@ def add_interval(x, y):
     lower = lower_bound(x) + lower_bound(y)
     upper = upper_bound(x) + upper_bound(y)
     return interval(lower, upper)
+
 def mul_interval(x, y):
     """Return the interval that contains the product of any value in x and any
     value in y."""
-    p1 = x[0] * y[0]
-    p2 = x[0] * y[1]
-    p3 = x[1] * y[0]
-    p4 = x[1] * y[1]
-    return [min(p1, p2, p3, p4), max(p1, p2, p3, p4)]
-
+    p1 = lower_bound(x) * lower_bound(y)
+    p2 = lower_bound(x) * upper_bound(y)
+    p3 = upper_bound(x) * lower_bound(y)
+    p4 = upper_bound(x) * upper_bound(y)
+    return interval(min(p1, p2, p3, p4), max(p1, p2, p3, p4))
 
 def sub_interval(x, y):
     """Return the interval that contains the difference between any value in x
     and any value in y."""
     "*** YOUR CODE HERE ***"
+    return interval(lower_bound(x) - upper_bound(y), upper_bound(x) - lower_bound(y))
 
 
 def div_interval(x, y):
@@ -258,6 +281,7 @@ def div_interval(x, y):
     any value in y. Division is implemented as the multiplication of x by the
     reciprocal of y."""
     "*** YOUR CODE HERE ***"
+    assert 1/upper_bound(y)<1/lower_bound(y)
     reciprocal_y = interval(1/upper_bound(y), 1/lower_bound(y))
     return mul_interval(x, reciprocal_y)
 
@@ -276,6 +300,13 @@ def quadratic(x, a, b, c):
     '0 to 10'
     """
     "*** YOUR CODE HERE ***"
+    f=lambda t:a*t*t+b*t+c
+    if a==0:return interval(c,c)
+    inflex=(-1*b)/(2*a)
+    sorted_interval=lambda l,u:interval(l,u) if l<=u else interval(u,l)
+    if inflex<=lower_bound(x) or inflex>=upper_bound(x):return sorted_interval(f(lower_bound(x)),f(upper_bound(x)))
+    if a>0:return interval(f(inflex),max(f(lower_bound(x)),f(upper_bound(x))))
+    return interval(min(f(lower_bound(x)),f(upper_bound(x))),f(inflex))
 
 
 def par1(r1, r2):
@@ -295,8 +326,8 @@ def check_par():
     >>> lower_bound(x) != lower_bound(y) or upper_bound(x) != upper_bound(y)
     True
     """
-    r1 = interval(1, 1) # Replace this line!
-    r2 = interval(1, 1) # Replace this line!
+    r1 = interval(1, 3) # Replace this line!
+    r2 = interval(2, 4) # Replace this line!
     return r1, r2
 
 
