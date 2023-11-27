@@ -20,6 +20,13 @@ def make_bank(balance):
     """
     def bank(message, amount):
         "*** YOUR CODE HERE ***"
+        nonlocal balance
+        if message not in ['withdraw','deposit']:return 'Invalid message'
+        elif message=='withdraw':
+            if amount>balance:return 'Insufficient funds'
+            balance-=amount
+        elif message=='deposit':balance+=amount
+        return balance
     return bank
 
 
@@ -52,6 +59,18 @@ def make_withdraw(balance, password):
     True
     """
     "*** YOUR CODE HERE ***"
+    incorrect_attempts=[]
+    def withdraw(amount,attempt):
+        "*** YOUR CODE HERE ***"
+        nonlocal balance,password,incorrect_attempts
+        if(len(incorrect_attempts)==3):return 'Too many incorrect attempts. Attempts: '+str(incorrect_attempts)
+        if attempt!=password:
+            incorrect_attempts+=[attempt]
+            return 'Incorrect password'
+        elif amount>balance:return 'Insufficient funds'
+        balance-=amount
+        return balance
+    return withdraw
 
 
 def repeated(t, k):
@@ -76,6 +95,15 @@ def repeated(t, k):
     """
     assert k > 1
     "*** YOUR CODE HERE ***"
+    current_n=float('inf')
+    for n in t:
+        if n!= current_n:
+            current_n=n
+            count=1
+        else:
+            count+=1
+            if(count==k):return current_n
+        
 
 
 def merge(incr_a, incr_b):
@@ -98,7 +126,16 @@ def merge(incr_a, incr_b):
     iter_a, iter_b = iter(incr_a), iter(incr_b)
     next_a, next_b = next(iter_a, None), next(iter_b, None)
     "*** YOUR CODE HERE ***"
-
+    while next_a is not None or next_b is not None:
+        if next_a==next_b:
+            yield next_a
+            next_a, next_b = next(iter_a, None), next(iter_b, None)
+        elif next_b is None or next_a is not None and next_a<next_b:
+            yield next_a
+            next_a=next(iter_a,None)
+        else:
+            yield next_b
+            next_b=next(iter_b,None)
 
 def make_joint(withdraw, old_pass, new_pass):
     """Return a password-protected withdraw function that has joint access to
@@ -139,6 +176,14 @@ def make_joint(withdraw, old_pass, new_pass):
     "Too many incorrect attempts. Attempts: ['my', 'secret', 'password']"
     """
     "*** YOUR CODE HERE ***"
+    set_reception=withdraw(0,old_pass)
+    if type(set_reception)==str:return set_reception
+    def joint(amount, attempt):
+        if attempt==new_pass:reception=withdraw(amount,old_pass)
+        else:reception=withdraw(amount,attempt)
+        return reception
+    return joint
+
 
 
 def remainders_generator(m):
