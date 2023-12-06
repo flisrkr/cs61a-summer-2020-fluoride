@@ -218,6 +218,11 @@ def remainders_generator(m):
     11
     """
     "*** YOUR CODE HERE ***"
+    def remainder_counter(rem):
+        for index in naturals():yield m*index-rem
+    yield remainder_counter(0)
+    for remainder in range(m-1,0,-1):yield remainder_counter(remainder)
+    #Inspired by FlyingPig again
 
 
 def naturals():
