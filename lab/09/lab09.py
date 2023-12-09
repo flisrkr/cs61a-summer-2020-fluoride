@@ -8,6 +8,8 @@ def convert_link(link):
     []
     """
     "*** YOUR CODE HERE ***"
+    if link==Link.empty:return []
+    return [link.first]+convert_link(link.rest)
 
 
 def every_other(s):
@@ -28,6 +30,9 @@ def every_other(s):
     Link(4)
     """
     "*** YOUR CODE HERE ***"
+    if s!=Link.empty and s.rest!=Link.empty:
+        s.rest=s.rest.rest
+        every_other(s.rest)
 
 
 def label_squarer(t):
@@ -39,6 +44,8 @@ def label_squarer(t):
     Tree(1, [Tree(9, [Tree(25)]), Tree(49)])
     """
     "*** YOUR CODE HERE ***"
+    t.label=t.label*t.label
+    for branch in t.branches:label_squarer(branch)
 
 
 def cumulative_mul(t):
@@ -51,6 +58,10 @@ def cumulative_mul(t):
     Tree(105, [Tree(15, [Tree(5)]), Tree(7)])
     """
     "*** YOUR CODE HERE ***"
+    for branch in t.branches:
+        cumulative_mul(branch)
+        t.label*=branch.label
+
 
 
 def has_cycle(link):
@@ -68,6 +79,14 @@ def has_cycle(link):
     False
     """
     "*** YOUR CODE HERE ***"
+    link_cache=[]
+    def link_digger(link_list):
+        if link_list in link_cache:return True
+        if link_list.rest==Link.empty:return False
+        link_cache.append(link_list)
+        return link_digger(link_list.rest)
+    return link_digger(link)
+            
 
 def has_cycle_constant(link):
     """Return whether link contains a cycle.
@@ -81,6 +100,13 @@ def has_cycle_constant(link):
     False
     """
     "*** YOUR CODE HERE ***"
+    slow_digger,fast_digger=link,link
+    while fast_digger!=Link.empty and fast_digger.rest!=Link.empty:
+        slow_digger,fast_digger=slow_digger.rest,fast_digger.rest.rest
+        if slow_digger==fast_digger:return True
+    return False
+#Inspired by FlyingPig again
+
 
 
 def reverse_other(t):
@@ -97,6 +123,12 @@ def reverse_other(t):
     Tree(1, [Tree(8, [Tree(3, [Tree(5), Tree(4)]), Tree(6, [Tree(7)])]), Tree(2)])
     """
     "*** YOUR CODE HERE ***"
+    label_stack=Link.empty
+    for branch in t.branches:label_stack=Link(branch.label,label_stack)
+    for branch in t.branches:
+        branch.label,label_stack=label_stack.first,label_stack.rest
+        for sub_branch in branch.branches:
+            reverse_other(sub_branch)
 
 
 class Link:
