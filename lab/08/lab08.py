@@ -33,4 +33,11 @@ def make_generators_generator(g):
     9
     """
     "*** YOUR CODE HERE ***"
+    def sub_generator(upper):
+        base_generator=g()
+        for elem_counter in range(0,upper):yield next(base_generator)
+    upper_counter=0
+    for elem in g():
+        upper_counter+=1
+        yield sub_generator(upper_counter)
 
