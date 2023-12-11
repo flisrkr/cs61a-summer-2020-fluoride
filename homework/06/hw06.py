@@ -50,6 +50,29 @@ class VendingMachine:
     'Here is your soda.'
     """
     "*** YOUR CODE HERE ***"
+    def __init__(self,merchandise,price):
+        self.merchandise=merchandise
+        self.price=price
+        self.stock,self.fund=0,0
+
+    def vend(self):
+        if not self.stock:return 'Inventory empty. Restocking required.'
+        elif self.fund<self.price:return 'You must add $'+str(self.price-self.fund)+' more funds.'
+        else:
+            change=self.fund-self.price
+            self.fund=0
+            self.stock-=1
+            if change:return 'Here is your '+self.merchandise+' and $'+str(change)+' change.'
+            return 'Here is your '+self.merchandise+'.'
+        
+    def add_funds(self,d_fund):
+        if not self.stock:return 'Inventory empty. Restocking required. Here is your $'+str(d_fund)+'.'
+        self.fund+=d_fund
+        return 'Current balance: $'+str(self.fund)
+    
+    def restock(self,d_stock):
+        self.stock+=d_stock
+        return 'Current '+self.merchandise+' stock: '+str(self.stock)
 
 
 class Mint:
@@ -88,9 +111,11 @@ class Mint:
 
     def create(self, kind):
         "*** YOUR CODE HERE ***"
+        return kind(self.year)
 
     def update(self):
         "*** YOUR CODE HERE ***"
+        self.year=self.current_year
 
 class Coin:
     def __init__(self, year):
@@ -98,6 +123,9 @@ class Coin:
 
     def worth(self):
         "*** YOUR CODE HERE ***"
+        diff=Mint.current_year-self.year-50
+        if diff>0:return self.cents+diff
+        return self.cents
 
 class Nickel(Coin):
     cents = 5
@@ -132,6 +160,18 @@ def is_bst(t):
     False
     """
     "*** YOUR CODE HERE ***"
+    def detailed_is_bst(tree_remain):
+        if not len(tree_remain.branches):return True,tree_remain.label,tree_remain.label
+        elif len(tree_remain.branches)>2:return False,-float('inf'),float('inf')
+        elif len(tree_remain.branches)==1:
+            message,lower,higher=detailed_is_bst(tree_remain.branches[0])
+            return True,min(tree_remain.label,lower),max(tree_remain.label,higher)
+        else:
+            msg_left,lower_left,higher_left=detailed_is_bst(tree_remain.branches[0])
+            msg_right,lower_right,higher_right=detailed_is_bst(tree_remain.branches[1])
+            return msg_left and msg_right and higher_left<=tree_remain.label and lower_right>tree_remain.label,\
+                lower_left,higher_right
+    return detailed_is_bst(t)[0]
 
 
 def store_digits(n):
@@ -150,6 +190,10 @@ def store_digits(n):
     >>> print("Do not use str or reversed!") if any([r in cleaned for r in ["str", "reversed"]]) else None
     """
     "*** YOUR CODE HERE ***"
+    if n<10:return Link(n,Link.empty)
+    divider=10
+    while divider*10<=n:divider*=10
+    return Link(n//divider,store_digits(n%divider))
 
 
 def path_yielder(t, value):
@@ -188,14 +232,14 @@ def path_yielder(t, value):
     """
 
     "*** YOUR CODE HERE ***"
+    def path_carver(node,record):
+        new_record=record+[node.label]
+        if node.label==value:yield new_record
+        for branch in node.branches:
+            for path in path_carver(branch,new_record):yield path
+    return path_carver(t,[])
 
-    for _______________ in _________________:
-        for _______________ in _________________:
-
-            "*** YOUR CODE HERE ***"
-
-
-def remove_all(link , value):
+def remove_all(link, value):
     """Remove all the nodes containing value in link. Assume that the
     first element is never removed.
 
@@ -213,6 +257,12 @@ def remove_all(link , value):
     <0 1>
     """
     "*** YOUR CODE HERE ***"
+    if link==Link.empty or link.rest==Link.empty:return
+    while link.first==value and link.rest!=Link.empty:
+        link.first,link.rest=link.rest.first,link.rest.rest
+    if link.rest!=Link.empty and link.rest.first==value and link.rest.rest==Link.empty:link.rest=Link.empty
+    if link!=Link.empty:
+        remove_all(link.rest,value)
 
 
 def deep_map(f, link):
@@ -229,6 +279,11 @@ def deep_map(f, link):
     <<2 <4 6> 8> <<10>>>
     """
     "*** YOUR CODE HERE ***"
+    if link==Link.empty:return Link.empty
+    if isinstance(link.first,Link):link=Link(deep_map(f,link.first),link.rest)
+    else:link=Link(f(link.first),link.rest)
+    link.rest=deep_map(f,link.rest)
+    return link
 
 
 class Tree:
