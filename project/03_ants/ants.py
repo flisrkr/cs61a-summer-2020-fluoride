@@ -216,7 +216,7 @@ class ShortThrower(ThrowerAnt):
     # BEGIN Problem 4
     implemented = True   # Change to True to view in the GUI
     def nearest_bee(self, beehive):
-        return ThrowerAnt.nearest_bee(beehive)
+        return ThrowerAnt.nearest_bee(self,beehive)
     # END Problem 4
 
 class LongThrower(ThrowerAnt):
@@ -229,7 +229,7 @@ class LongThrower(ThrowerAnt):
     # BEGIN Problem 4
     implemented = True   # Change to True to view in the GUI
     def nearest_bee(self, beehive):
-        return ThrowerAnt.nearest_bee(beehive)
+        return ThrowerAnt.nearest_bee(self,beehive)
     # END Problem 4
 
 class FireAnt(Ant):
@@ -320,7 +320,12 @@ class NinjaAnt(Ant):
 
 # BEGIN Problem 8
 # The WallAnt class
-# END Problem 8
+class WallAnt(Ant):
+    name='Wall'
+    food_cost=4
+    implemented=True
+    def __init__(self, armor=4):
+        Ant.__init__(self,armor)
 
 class ContainerAnt(Ant):
     def __init__(self, *args, **kwargs):
